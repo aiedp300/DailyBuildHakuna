@@ -1,0 +1,17 @@
+<!-- location_list.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location List</title>
+</head>
+<body>
+    <h1>Locations</h1>
+    <ul>
+    {% for location in venue %}
+        <li><a href="{% url 'location_detail' location.id %}">{{ location.plus_code }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

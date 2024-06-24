@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Error</title>
+</head>
+<body>
+    <h1>Booking Error</h1>
+    <p>Cannot book event on {{ existing_events.0.date }}. The following event(s) are already booked:</p>
+    <ul>
+        {% for event in existing_events %}
+            <li>{{ event.name }} on {{ event.date }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'book_event' %}">Go Back</a>
+</body>
+</html>

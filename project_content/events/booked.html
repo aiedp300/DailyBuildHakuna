@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1> Camps Booked List </h1>
+<ul>
+     {% for book in  booked %}:
+    
+        <li>
+           
+          {{ book.name}}  <br> {{book.date}}
+
+        </li>
+    
+ 
+ 
+    
+    {% endfor %} 
+
+</ul>  
+
+
+
+{% endblock  %}
