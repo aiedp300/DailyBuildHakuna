@@ -5,7 +5,23 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
 from .models import Booking
+from django.contrib.admin.widgets import AdminDateWidget
+from .models import ServicePurchase
 
+#################  concept  ######################
+class ServicePurchaseForm(forms.ModelForm):
+    #start_date = forms.DateField(widget=AdminDateWidget())
+    #end_date = forms.DateField(widget=AdminDateWidget())
+   
+    
+    class Meta:
+        model = ServicePurchase
+        fields = ['product', 'start_date', 'end_date']
+        widgets = {
+        'start_date': forms.DateInput(attrs={'type': 'date'}),
+        'end_date': forms.DateInput(attrs={'type': 'date'}),
+    }
+##################   end concept #################################
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking

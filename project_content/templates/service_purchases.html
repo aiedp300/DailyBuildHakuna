@@ -1,0 +1,15 @@
+<!-- templates/service_purchases.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Service Purchases</title>
+</head>
+<body>
+    <h1>My Service Purchases</h1>
+    <ul>
+    {% for purchase in purchases %}
+        <li>{{ purchase.product.name }}: {{ purchase.start_date }} to {{ purchase.end_date }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

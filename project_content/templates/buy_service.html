@@ -1,0 +1,67 @@
+<!-- templates/buy_service.html (extended) -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buy Service</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+    <script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/admin/RelatedObjectLookup.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/actions.js' %}"></script>
+    <style>
+        .unavailable-date {
+            background-color: #ffcccc !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Buy Service</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Purchase</button>
+    </form>
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unavailableDates = [
+                {% for purchase in purchases %}
+                    { start: "{{ purchase.start_date }}", end: "{{ purchase.end_date }}" },
+                {% endfor %}
+            ];
+
+            const startDateInput = document.getElementById('id_start_date');
+            const endDateInput = document.getElementById('id_end_date');
+
+            function highlightUnavailableDates() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+
+                unavailableDates.forEach(dateRange => {
+                    const rangeStart = new Date(dateRange.start);
+                    const rangeEnd = new Date(dateRange.end);
+
+                    if ((startDate >= rangeStart && startDate <= rangeEnd) || (endDate >= rangeStart && endDate <= rangeEnd)) {
+                        startDateInput.classList.add('unavailable-date');
+                        endDateInput.classList.add('unavailable-date');
+                    } else {
+                        startDateInput.classList.remove('unavailable-date');
+                        endDateInput.classList.remove('unavailable-date');
+                    }
+                });
+            }
+
+            startDateInput.addEventListener('change', highlightUnavailableDates);
+            endDateInput.addEventListener('change', highlightUnavailableDates);
+        });
+    </script>
+</body>
+</html>
+

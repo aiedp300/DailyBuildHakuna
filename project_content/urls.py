@@ -19,7 +19,12 @@ urlpatterns = [
     path('edit-profile/', views.edit_profile, name='edit_profile'),
     path('logout/', views.logout, name='logout'),
     path('create/', views.booking_create_view, name='booking_create'),
+    path('create/<int:unit_affected>/', views.booking_create_view, name='booking_create'),
     path('success/', views.booking_success_view, name='booking_success'),
+    path('product/<int:product_id>/buy/', views.buy_product, name='buy_product'),
+    path('product/<int:product_id>/', views.product_detail, name='product_detail'),
+    path('buy_service/', views.buy_service, name='buy_service'),
+    path('service_purchases/', views.service_purchases, name='service_purchases'),
    
 
 ]

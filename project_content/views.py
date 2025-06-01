@@ -1,6 +1,6 @@
 from django.views.generic import ListView
 from django.views import View
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 import googlemaps
 from django.conf import settings
@@ -17,7 +17,96 @@ from .forms import BookingForm
 from .models import UnavailableDate
 from django.contrib.auth import authenticate
 from django.contrib.auth import authenticate, login
+from django.utils import timezone
+from .models import Product, Purchase, ServicePurchase
+from .forms import ServicePurchaseForm
+from django.contrib import messages
 
+###############  concept ###################################
+@login_required
+def buy_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    today = timezone.now().date()
+    
+    # Check if the user has already bought this product today
+    if Purchase.objects.filter(user=request.user, product=product, date=today).exists():
+        messages.error(request, "You can only buy this product once a day.")
+        return redirect('product_detail', product_id=product_id)
+
+    # Otherwise, create a new purchase
+    Purchase.objects.create(user=request.user, product=product)
+    messages.success(request, "Product bought successfully.")
+    return redirect('product_detail', product_id=product_id)
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return render(request, 'product_detail.html', {'product': product})
+
+# @login_required
+# def buy_service(request):
+#     if request.method == 'POST':
+#         form = ServicePurchaseForm(request.POST)
+#         if form.is_valid():
+#             product = form.cleaned_data['product']
+#             start_date = form.cleaned_data['start_date']
+#             end_date = form.cleaned_data['end_date']
+            
+#             # Check for overlapping dates
+#             overlapping_purchases = ServicePurchase.objects.filter(
+#                 product=product,
+#                 user=request.user,
+#                 start_date__lt=end_date,
+#                 end_date__gt=start_date
+#             )
+            
+#             if overlapping_purchases.exists():
+#                 messages.error(request, "You already have this product booked for overlapping dates.")
+#             else:
+#                 purchase = form.save(commit=False)
+#                 purchase.user = request.user
+#                 purchase.save()
+#                 messages.success(request, "Service purchased successfully.")
+#                 return redirect('service_purchases')
+#     else:
+#         form = ServicePurchaseForm()
+    
+#     return render(request, 'buy_service.html', {'form': form})
+@login_required
+def buy_service(request):
+    purchases = ServicePurchase.objects.filter(user=request.user)
+    if request.method == 'POST':
+        form = ServicePurchaseForm(request.POST)
+        if form.is_valid():
+            product = form.cleaned_data['product']
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            
+            # Check for overlapping dates
+            overlapping_purchases = ServicePurchase.objects.filter(
+                product=product,
+                user=request.user,
+                start_date__lt=end_date,
+                end_date__gt=start_date
+            )
+            
+            if overlapping_purchases.exists():
+                messages.error(request, "You already have this product booked for overlapping dates.")
+            else:
+                purchase = form.save(commit=False)
+                purchase.user = request.user
+                purchase.save()
+                messages.success(request, "Service purchased successfully.")
+                return redirect('service_purchases')
+    else:
+        form = ServicePurchaseForm()
+    
+    return render(request, 'buy_service.html', {'form': form, 'purchases': purchases})
+
+@login_required
+def service_purchases(request):
+    purchases = ServicePurchase.objects.filter(user=request.user)
+    return render(request, 'service_purchases.html', {'purchases': purchases})
+############################## end conv=cept ##########################################
 # def booking_create_view(request):
 #     # Retrieve the username from the session
 #     username = request.session.get('username')
@@ -27,7 +116,9 @@ from django.contrib.auth import authenticate, login
 def home(request):
     #return HttpResponse("hello world!")
     return render(request,"home.html")
-def booking_create_view(request):
+#added to ensure only logins that exist may make a booking - and use their session id for user id
+
+def booking_create_view(request,unit_affected):
 
     
     if request.method == 'POST':
@@ -35,15 +126,26 @@ def booking_create_view(request):
         if form.is_valid():
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
-            unit_affected = form.cleaned_data['unit']
+          
+            check_unit_affected = get_object_or_404(UnavailableDate, unitAffected = unit_affected)
             # Check if any unavailable dates overlap with the booking
-            unavailable_dates = UnavailableDate.objects.filter(start_date__range =[start_date, end_date])
+            #unavailable_dates = UnavailableDate.objects.filter(start_date__range =[start_date, end_date],unitAffected=check_unit_affected ).exists()
+            #cannot unpack non-iterable Unit object
+            #unavailable_unit = UnavailableDate.objects.filter(unit_affected)
             #also test for the unit number on the same dates 
-            if unavailable_dates.exists() and unit_affected :
-                return render(request, 'booking/error.html', {'mes sage': 'Selected dates are unavailable.'})
+            #####################################################  worked but only for dates and not unit also
+            if UnavailableDate.objects.filter(start_date__range =[start_date, end_date],unitAffected=check_unit_affected ).exists():
+                return render(request, 'booking/error.html', {'message': 'Selected dates are unavailable.'})
             else:
                 form.save()
                 return redirect('booking_success')
+            
+            
+            # if unavailable_doubleBooking.exists():
+            #     return render(request, 'booking/error.html', {'message': 'Selected dates are unavailable.'})
+            # else:
+            #     form.save()
+            #     return redirect('booking_success')
     else:
         form = BookingForm()
     return render(request, 'booking/booking_create.html', {'form': form})

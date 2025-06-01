@@ -2,8 +2,37 @@ from django.db import models
 from .utils import geocode_plus_code
 from django.contrib.auth.models import User
 from location_field.models.plain import PlainLocationField
+from django.utils import timezone
 # import random num generatot like numpy
+####################### testing concept  #######################################
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
+    def __str__(self):
+        return self.name
+
+class Purchase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.product.name} on {self.date}'
+
+
+class ServicePurchase(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f'{self.user.username} - {self.product.name} from {self.start_date} to {self.end_date}'
+    
+
+    
+###########################  end test concept  #######################################
 
 
 
